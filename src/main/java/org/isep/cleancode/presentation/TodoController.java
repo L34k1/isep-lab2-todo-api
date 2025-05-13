@@ -3,7 +3,7 @@ package org.isep.cleancode.presentation;
 import com.google.gson.Gson;
 import org.isep.cleancode.Todo;
 import org.isep.cleancode.application.TodoManager;
-import org.isep.cleancode.persistence.inmemory.TodoInMemoryRepository;
+import org.isep.cleancode.application.ITodoRepository;
 import spark.Request;
 import spark.Response;
 
@@ -13,9 +13,8 @@ public class TodoController {
     private static final Gson gson = new Gson();
     private final TodoManager todoManager;
 
-    public TodoController() {
-        // Use in-memory repository for Step 1
-        this.todoManager = new TodoManager(new TodoInMemoryRepository());
+    public TodoController(ITodoRepository repository) {
+        this.todoManager = new TodoManager(repository);
     }
 
     public Object getAllTodos(Request req, Response res) {
@@ -37,6 +36,9 @@ public class TodoController {
             res.status(201);
             res.type("application/json");
             return gson.toJson(newTodo);
+        } catch (IllegalArgumentException e) {
+            res.status(400);
+            return e.getMessage();
         } catch (Exception e) {
             res.status(500);
             return "Error creating todo: " + e.getMessage();
